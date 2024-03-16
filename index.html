@@ -87,143 +87,161 @@
         <button id="reset">리셋</button>
     </div>
 
-  <script>
-    const sheetId = '1qLoowj5R94pgLCS5TNtm8UA6Yd0dmWKAKq71e28kySk';
-    const apiKey = 'AIzaSyDrClgUbT-0cFoYe4W81dyxikZVbjVlcT8';
-    const ranges = ['B2:B7', 'D2:D7', 'F2:F7', 'H2:H7', 'J2:J7', 'L2:L7'];
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchGet?ranges=${ranges.join('&ranges=')}&key=${apiKey}`;
+<script>
+const sheetId = '1qLoowj5R94pgLCS5TNtm8UA6Yd0dmWKAKq71e28kySk';
+const apiKey = 'AIzaSyDrClgUbT-0cFoYe4W81dyxikZVbjVlcT8';
+const ranges = ['B2:B7', 'D2:D7', 'F2:F7', 'H2:H7', 'J2:J7', 'L2:L7'];
+const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchGet?ranges=${ranges.join('&ranges=')}&key=${apiKey}`;
 
-    async function fetchData(date) {
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            const studentData = [];
-            
-            data.valueRanges.forEach(rangeData => {
-                const values = rangeData.values;
-                for (let i = 0; i < values.length; i++) {
-                    if (!studentData[i]) studentData[i] = [];
-                    studentData[i].push(values[i][0] || '없음'); // Add '없음' if empty
-                }
-            });
-
-            populateStudents(studentData);
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    function populateStudents(studentData) {
-        const container = document.getElementById('container');
-        container.innerHTML = ''; // Clear previous data
-        studentData.forEach(row => {
-            row.forEach(student => {
-                const studentBox = document.createElement('div');
-                studentBox.className = 'student-box';
-                studentBox.textContent = student; // Assuming entry is the student name
-
-                const dropdown = document.createElement('select');
-                dropdown.className = 'attendance-dropdown';
-                dropdown.innerHTML = `
-                    <option value="none">${student === '없음' ? '선택' : '출석'}</option>
-                    <option value="출석">출석</option>
-                    <option value="지각">지각</option>
-                    <option value="결석">결석</option>
-                    <option value="조퇴">조퇴</option>
-                `;
-                if (student !== '없음') {
-                    dropdown.value = '출석'; // 데이터가 있으면 출석으로 시작
-                }
-                studentBox.appendChild(dropdown);
-                container.appendChild(studentBox);
-
-                // 드랍다운 변경 시 출결 통계 업데이트
-                dropdown.addEventListener('change', calculateStatistics);
-            });
-        });
-        calculateStatistics(); // 초기 통계 계산
-    }
-
-    function calculateStatistics() {
-        const attendanceDropdowns = document.querySelectorAll('.attendance-dropdown');
-        const totalStudents = attendanceDropdowns.length;
-        let attendanceCount = 0, lateCount = 0, absentCount = 0, leaveCount = 0;
-
-        attendanceDropdowns.forEach(dropdown => {
-            const value = dropdown.value;
-            if (value === '출석') attendanceCount++;
-            else if (value === '지각') lateCount++;
-            else if (value === '결석') absentCount++;
-            else if (value === '조퇴') leaveCount++;
+async function fetchData(date) {
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const studentData = [];
+        
+        data.valueRanges.forEach(rangeData => {
+            const values = rangeData.values;
+            for (let i = 0; i < values.length; i++) {
+                if (!studentData[i]) studentData[i] = [];
+                studentData[i].push(values[i][0] || '없음'); // Add '없음' if empty
+            }
         });
 
-        document.getElementById('attendance-summary').textContent = `전체: ${totalStudents} | 출석: ${attendanceCount} | 지각: ${lateCount} | 결석: ${absentCount} | 조퇴: ${leaveCount}`;
+        populateStudents(studentData);
+    } catch (error) {
+        console.error('Error:', error);
     }
+}
 
-    document.getElementById('reset').addEventListener('click', function() {
-        resetAttendance();
-        calculateStatistics();
+function populateStudents(studentData) {
+    const container = document.getElementById('container');
+    container.innerHTML = ''; // Clear previous data
+    studentData.forEach(row => {
+        row.forEach(student => {
+            const studentBox = document.createElement('div');
+            studentBox.className = 'student-box';
+            studentBox.textContent = student; // Assuming entry is the student name
+
+            const dropdown = document.createElement('select');
+            dropdown.className = 'attendance-dropdown';
+            dropdown.innerHTML = `
+                <option value="none">${student === '없음' ? '선택' : '출석'}</option>
+                <option value="출석">출석</option>
+                <option value="지각">지각</option>
+                <option value="결석">결석</option>
+                <option value="조퇴">조퇴</option>
+            `;
+            if (student !== '없음') {
+                dropdown.value = '출석'; // 데이터가 있으면 출석으로 시작
+            }
+            studentBox.appendChild(dropdown);
+            container.appendChild(studentBox);
+
+            // 드랍다운 변경 시 출결 통계 업데이트
+            dropdown.addEventListener('change', calculateStatistics);
+        });
+    });
+    calculateStatistics(); // 초기 통계 계산
+}
+
+function calculateStatistics() {
+    const attendanceDropdowns = document.querySelectorAll('.attendance-dropdown');
+    const totalStudents = attendanceDropdowns.length;
+    let attendanceCount = 0, lateCount = 0, absentCount = 0, leaveCount = 0;
+
+    attendanceDropdowns.forEach(dropdown => {
+        const value = dropdown.value;
+        if (value === '출석') attendanceCount++;
+        else if (value === '지각') lateCount++;
+        else if (value === '결석') absentCount++;
+        else if (value === '조퇴') leaveCount++;
     });
 
-    document.getElementById('fetch-data').addEventListener('click', function() {
-        const year = document.getElementById('year-dropdown').value;
-        const month = document.getElementById('month-dropdown').value;
-        const day = document.getElementById('day-dropdown').value;
-        const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        fetchData(date);
-        alert('데이터가 불러와졌습니다.');
-    });
+    document.getElementById('attendance-summary').textContent = `전체: ${totalStudents} | 출석: ${attendanceCount} | 지각: ${lateCount} | 결석: ${absentCount} | 조퇴: ${leaveCount}`;
+}
 
-    document.getElementById('save-data').addEventListener('click', function() {
-        const attendanceData = collectAttendanceData();
-        const year = document.getElementById('year-dropdown').value;
-        const month = document.getElementById('month-dropdown').value;
-        const day = document.getElementById('day-dropdown').value;
-        const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        localStorage.setItem(date, JSON.stringify(attendanceData));
-        alert('데이터가 저장되었습니다.');
-    });
+document.getElementById('reset').addEventListener('click', function() {
+    resetAttendance();
+    calculateStatistics();
+});
 
-    function resetAttendance() {
-        document.querySelectorAll('.attendance-dropdown').forEach(dropdown => {
-            dropdown.value = 'none';
-        });
+document.getElementById('fetch-data').addEventListener('click', function() {
+    const year = document.getElementById('year-dropdown').value;
+    const month = document.getElementById('month-dropdown').value;
+    const day = document.getElementById('day-dropdown').value;
+    const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    fetchData(date);
+    alert('데이터가 불러와졌습니다.');
+});
+
+document.getElementById('save-data').addEventListener('click', function() {
+    const attendanceData = collectAttendanceData();
+    const year = document.getElementById('year-dropdown').value;
+    const month = document.getElementById('month-dropdown').value;
+    const day = document.getElementById('day-dropdown').value;
+    const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    localStorage.setItem(date, JSON.stringify(attendanceData));
+    alert('데이터가 저장되었습니다.');
+});
+
+function collectAttendanceData() {
+    const data = [];
+    document.querySelectorAll('.student-box').forEach((box, index) => {
+        const studentName = box.textContent.trim();
+        const attendanceStatus = box.querySelector('.attendance-dropdown').value;
+        data.push({ name: studentName, status: attendanceStatus });
+    });
+    return data;
+}
+
+function populateStudentsWithAttendanceData(attendanceData) {
+    const container = document.getElementById('container');
+    container.innerHTML = ''; // Clear previous data
+
+    attendanceData.forEach(student => {
+        const studentBox = document.createElement('div');
+        studentBox.className = 'student-box';
+        studentBox.textContent = student.name;
+
+        const dropdown = document.createElement('select');
+        dropdown.className = 'attendance-dropdown';
+        dropdown.innerHTML = `
+            <option value="none">선택</option>
+            <option value="출석">출석</option>
+            <option value="지각">지각</option>
+            <option value="결석">결석</option>
+            <option value="조퇴">조퇴</option>
+        `;
+        dropdown.value = student.status;
+        studentBox.appendChild(dropdown);
+        container.appendChild(studentBox);
+    });
+}
+
+window.onload = function() {
+    // 월, 일 드랍다운 초기화 로직 유지
+    const monthDropdown = document.getElementById('month-dropdown');
+    for (let i = 1; i <= 12; i++) {
+        monthDropdown.innerHTML += `<option value="${i}">${i}월</option>`;
     }
 
-    function collectAttendanceData() {
-        const data = [];
-        document.querySelectorAll('.student-box').forEach((box, index) => {
-            const studentName = box.textContent.trim();
-            const attendanceStatus = box.querySelector('.attendance-dropdown').value;
-            data.push({ name: studentName, status: attendanceStatus });
-        });
-        return data;
+    const dayDropdown = document.getElementById('day-dropdown');
+    for (let i = 1; i <= 31; i++) {
+        dayDropdown.innerHTML += `<option value="${i}">${i}일</option>`;
     }
 
-    window.onload = function() {
-        // 월, 일 드랍다운 초기화 로직 유지
-        const monthDropdown = document.getElementById('month-dropdown');
-        for (let i = 1; i <= 12; i++) {
-            monthDropdown.innerHTML += `<option value="${i}">${i}월</option>`;
-        }
+    // Set today's date as default
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const day = today.getDate();
+    document.getElementById('year-dropdown').value = year;
+    document.getElementById('month-dropdown').value = month;
+    document.getElementById('day-dropdown').value = day;
 
-        const dayDropdown = document.getElementById('day-dropdown');
-        for (let i = 1; i <= 31; i++) {
-            dayDropdown.innerHTML += `<option value="${i}">${i}일</option>`;
-        }
-
-        // Set today's date as default
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        const day = today.getDate();
-        document.getElementById('year-dropdown').value = year;
-        document.getElementById('month-dropdown').value = month;
-        document.getElementById('day-dropdown').value = day;
-
-        // Fetch data for today initially
-        fetchData(`${year}-${month}-${day}`);
-    };
+    // Fetch data for today initially
+    fetchData(`${year}-${month}-${day}`);
+};
 </script>
 </body>
 </html>
