@@ -277,8 +277,29 @@
             document.getElementById('month-dropdown').value = month;
             document.getElementById('day-dropdown').value = day;
 
-            fetchData(`${year}-${month}-${day}`);
+            const date = `${year}-${month}-${day}`;
+            fetchData(date);
+
+            // 로컬 스토리지에서 데이터 로드
+            const storedData = localStorage.getItem(date);
+            if (storedData) {
+                const parsedData = JSON.parse(storedData);
+                populateStoredAttendance(parsedData);
+            }
         };
+
+        // 저장된 출결 데이터로 출결 상태 초기화
+        function populateStoredAttendance(attendanceData) {
+            attendanceData.forEach(data => {
+                const studentName = data.name;
+                const attendanceStatus = data.status;
+                const studentBox = [...document.querySelectorAll('.student-box')].find(box => box.textContent.trim() === studentName);
+                const dropdown = studentBox.querySelector('.attendance-dropdown');
+                dropdown.value = attendanceStatus;
+                updateBoxColor(studentBox, attendanceStatus);
+            });
+            calculateStatistics();
+        }
     </script>
 </body>
 </html>
