@@ -10,11 +10,16 @@
             padding: 0;
         }
 
+        .main-container {
+            padding-top: 100px; /* 변경: 상단 여백 추가 */
+            padding-bottom: 100px; /* 변경: 하단 여백 추가 */
+        }
+
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(6, 7.5%);
-            grid-auto-rows: 37.5px;
-            gap: 0; /* 변경: 위아래 간격을 없애줍니다. */
+            grid-template-columns: repeat(6, 1fr);
+            grid-auto-rows: 100px;
+            gap: 10px;
             padding: 10px;
             overflow-x: auto;
             overflow-y: hidden;
@@ -23,14 +28,8 @@
 
         .student-box {
             border: 1px solid #ddd;
-            padding: 5px;
+            padding: 10px;
             text-align: center;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 50%; /* 변경: 박스 크기를 반으로 줄입니다. */
         }
 
         .attendance-dropdown {
@@ -53,7 +52,7 @@
 
         #date-selector {
             position: fixed;
-            bottom: 60px;
+            bottom: 0; /* 변경: 화면 하단에 붙도록 설정 */
             left: 0;
             width: 100%;
             box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
@@ -61,16 +60,36 @@
             padding: 10px;
             display: flex;
             align-items: center;
+            z-index: 1;
         }
 
         #reset {
             padding: 5px 10px;
             font-size: 80%;
         }
+
+        /* Media Query for Mobile Devices */
+        @media only screen and (min-width: 600px) {
+            .grid-container {
+                grid-template-columns: repeat(6, 7.5%);
+            }
+
+            .status-bar {
+                bottom: unset;
+                top: 10px;
+            }
+        }
+
+        /* 추가: 데이터가 있는 상자의 배경색 변경 */
+        .has-data {
+            background-color: #ffe0b2;
+        }
     </style>
 </head>
 <body>
-    <div id="container" class="grid-container"></div>
+    <div class="main-container">
+        <div id="container" class="grid-container"></div>
+    </div>
 
     <div id="date-selector">
         <select id="year-dropdown">
@@ -133,11 +152,12 @@ function populateStudents(studentData) {
             `;
             if (student !== '없음') {
                 dropdown.value = '출석'; // 데이터가 있으면 출석으로 시작
+                studentBox.classList.add('has-data'); // 데이터가 있는 상자에 클래스 추가
             }
             studentBox.appendChild(dropdown);
             container.appendChild(studentBox);
 
-            // 드랍다운 변경 시 출결 통계 업데이트
+            // 드롭다운 변경 시 출결 통계 업데이트
             dropdown.addEventListener('change', calculateStatistics);
         });
     });
@@ -184,6 +204,12 @@ document.getElementById('save-data').addEventListener('click', function() {
     alert('데이터가 저장되었습니다.');
 });
 
+function resetAttendance() {
+    document.querySelectorAll('.attendance-dropdown').forEach(dropdown => {
+        dropdown.value = 'none';
+    });
+}
+
 function collectAttendanceData() {
     const data = [];
     document.querySelectorAll('.student-box').forEach((box, index) => {
@@ -194,32 +220,8 @@ function collectAttendanceData() {
     return data;
 }
 
-function populateStudentsWithAttendanceData(attendanceData) {
-    const container = document.getElementById('container');
-    container.innerHTML = ''; // Clear previous data
-
-    attendanceData.forEach(student => {
-        const studentBox = document.createElement('div');
-        studentBox.className = 'student-box';
-        studentBox.textContent = student.name;
-
-        const dropdown = document.createElement('select');
-        dropdown.className = 'attendance-dropdown';
-        dropdown.innerHTML = `
-            <option value="none">선택</option>
-            <option value="출석">출석</option>
-            <option value="지각">지각</option>
-            <option value="결석">결석</option>
-            <option value="조퇴">조퇴</option>
-        `;
-        dropdown.value = student.status;
-        studentBox.appendChild(dropdown);
-        container.appendChild(studentBox);
-    });
-}
-
 window.onload = function() {
-    // 월, 일 드랍다운 초기화 로직 유지
+    // 월, 일 드롭다운 초기화 로직 유지
     const monthDropdown = document.getElementById('month-dropdown');
     for (let i = 1; i <= 12; i++) {
         monthDropdown.innerHTML += `<option value="${i}">${i}월</option>`;
