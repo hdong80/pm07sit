@@ -8,8 +8,8 @@
         body {
             margin: 0;
             padding: 0;
-            padding-top: 50px;
-            padding-bottom: 60px;
+            padding-top: 50px; /* 위 여유 공간 추가 */
+            padding-bottom: 60px; /* 아래 여유 공간 추가 */
         }
 
         .grid-container {
@@ -27,14 +27,11 @@
             border: 1px solid #ddd;
             padding: 10px;
             text-align: center;
-            position: relative;
         }
 
         .attendance-dropdown {
             margin-top: 5px;
             width: calc(110% - 20px);
-            font-size: 80%;
-            visibility: visible;
         }
 
         .status-bar {
@@ -68,12 +65,43 @@
             padding: 5px 10px;
             font-size: 80%;
         }
-
         /* 추가: 결석, 지각, 조퇴, 출석에 따른 색상 지정 */
         .absent { background-color: #ffb2b2; }
         .late { background-color: #e0b3ff; }
         .leave { background-color: #b3e0ff; }
         .attendance { background-color: #ffe0b2; }
+
+        /* Media Query for Mobile Devices */
+        @media only screen and (max-width: 600px) {
+            .grid-container {
+                grid-template-columns: repeat(6, 15%); /* 수정: 박스 크기를 양 옆으로 두 배로 늘림 */
+            }
+
+            .status-bar {
+                top: 0;
+                bottom: auto;
+            }
+
+            .student-box {
+                font-size: 65%;
+                height: 50%; 
+                margin-bottom: 10%;
+            }
+
+            .attendance-dropdown {
+                width: 105%;
+                font-size: 60%; /* 드롭다운의 글씨 크기를 더 줄임 */
+                visibility: visible; /* 수정: 드롭다운을 항상 표시 */
+            }
+
+            .has-data {
+                background-color: #ffe0b2; /* 연한 주황색 배경 적용 */
+            }
+
+            select {
+                font-size: 8px; /* 드롭다운의 글씨 크기를 키움 */
+            }
+        }
     </style>
 </head>
 <body>
