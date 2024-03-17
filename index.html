@@ -141,6 +141,19 @@
                 });
 
                 populateStudents(studentData);
+
+                // 구글 시트에서 데이터를 가져온 후 출석으로 기본 설정
+                document.querySelectorAll('.attendance-dropdown').forEach(dropdown => {
+                    dropdown.value = '출석';
+                    updateBoxColor(dropdown.parentElement, '출석');
+                });
+
+                // 로컬 스토리지에서 데이터 로드
+                const storedData = localStorage.getItem(date);
+                if (storedData) {
+                    const parsedData = JSON.parse(storedData);
+                    populateStoredAttendance(parsedData);
+                }
             } catch (error) {
                 console.error('Error:', error);
             }
