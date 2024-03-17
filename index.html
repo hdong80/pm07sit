@@ -69,7 +69,7 @@
         /* Media Query for Mobile Devices */
         @media only screen and (max-width: 600px) {
             .grid-container {
-                grid-template-columns: repeat(6, 7.5%);
+                grid-template-columns: repeat(6, 15%); /* 수정: 박스 크기를 양 옆으로 두 배로 늘림 */
             }
 
             .status-bar {
@@ -157,7 +157,7 @@ function populateStudents(studentData) {
             studentBox.appendChild(dropdown);
             container.appendChild(studentBox);
 
-            // 드랍다운 변경 시 출결 통계 업데이트
+            // 드롭다운 변경 시 출결 통계 업데이트
             dropdown.addEventListener('change', calculateStatistics);
         });
     });
