@@ -11,7 +11,6 @@
             padding-top: 50px; /* 위 여유 공간 추가 */
             padding-bottom: 60px; /* 아래 여유 공간 추가 */
         }
-
         .grid-container {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -22,18 +21,15 @@
             overflow-y: hidden;
             margin: 0;
         }
-
         .student-box {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: center;
         }
-
         .attendance-dropdown {
             margin-top: 5px;
             width: calc(110% - 20px);
         }
-
         .status-bar {
             position: fixed;
             top: 10px;
@@ -47,7 +43,6 @@
             align-items: center;
             z-index: 1;
         }
-
         #date-selector {
             position: fixed;
             bottom: 0;
@@ -60,44 +55,33 @@
             align-items: center;
             z-index: 1;
         }
-
         #reset {
             padding: 5px 10px;
             font-size: 80%;
         }
-        /* 추가: 결석, 지각, 조퇴, 출석에 따른 색상 지정 */
         .absent { background-color: #ffb2b2; }
         .late { background-color: #e0b3ff; }
         .leave { background-color: #b3e0ff; }
         .attendance { background-color: #ffe0b2; }
-
-        /* Media Query for Mobile Devices */
         @media only screen and (max-width: 600px) {
             .grid-container {
-                grid-template-columns: repeat(6, 15%); /* 수정: 박스 크기를 양 옆으로 두 배로 늘림 */
+                grid-template-columns: repeat(6, 15%);
             }
-
             .status-bar {
                 top: 0;
                 bottom: auto;
             }
-
             .student-box {
                 font-size: 65%;
                 height: 50%; 
                 margin-bottom: 10%;
             }
-
             .attendance-dropdown {
                 width: 105%;
-                font-size: 60%; /* 드롭다운의 글씨 크기를 더 줄임 */
-               
-            .has-data {
-                background-color: #ffe0b2; /* 연한 주황색 배경 적용 */
+                font-size: 60%;
             }
-
             select {
-                font-size: 8px; /* 드롭다운의 글씨 크기를 키움 */
+                font-size: 8px;
             }
         }
     </style>
@@ -128,19 +112,24 @@
 
         async function fetchData(date) {
             try {
-                const response = await fetch(url);
-                const data = await response.json();
-                const studentData = [];
+                const storedData = localStorage.getItem(date);
+                if (storedData) {
+                    populateStudents(JSON.parse(storedData));
+                } else {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    const studentData = [];
 
-                data.valueRanges.forEach(rangeData => {
-                    const values = rangeData.values;
-                    for (let i = 0; i < values.length; i++) {
-                        if (!studentData[i]) studentData[i] = [];
-                        studentData[i].push(values[i][0] || '없음');
-                    }
-                });
+                    data.valueRanges.forEach(rangeData => {
+                        const values = rangeData.values;
+                        for (let i = 0; i < values.length; i++) {
+                            if (!studentData[i]) studentData[i] = [];
+                            studentData[i].push(values[i][0] || '없음');
+                        }
+                    });
 
-                populateStudents(studentData);
+                    populateStudents(studentData);
+                }
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -174,18 +163,11 @@
                     dropdown.addEventListener('change', function() {
                         calculateStatistics();
                         updateBoxColor(studentBox, dropdown.value);
+                        saveCurrentAttendanceData();
                     });
                 });
             });
             calculateStatistics();
-            // 모든 설정이 완료된 후에 드롭다운 설정값이 출석 상태이면 배경색을 연한 주황색으로 변경
-            const attendanceDropdowns = document.querySelectorAll('.attendance-dropdown');
-            attendanceDropdowns.forEach(dropdown => {
-                if (dropdown.value === '출석') {
-                    const studentBox = dropdown.parentElement;
-                    studentBox.classList.add('attendance');
-                }
-            });
         }
 
         function calculateStatistics() {
@@ -224,9 +206,9 @@
 
         document.getElementById('fetch-data').addEventListener('click', function() {
             const year = document.getElementById('year-dropdown').value;
-            const month = document.getElementById('month-dropdown').value;
-            const day = document.getElementById('day-dropdown').value;
-            const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            const month = document.getElementById('month-dropdown').value.padStart(2, '0');
+            const day = document.getElementById('day-dropdown').value.padStart(2, '0');
+            const date = `${year}-${month}-${day}`;
             fetchData(date);
             alert('데이터가 불러와졌습니다.');
         });
@@ -234,9 +216,9 @@
         document.getElementById('save-data').addEventListener('click', function() {
             const attendanceData = collectAttendanceData();
             const year = document.getElementById('year-dropdown').value;
-            const month = document.getElementById('month-dropdown').value;
-            const day = document.getElementById('day-dropdown').value;
-            const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            const month = document.getElementById('month-dropdown').value.padStart(2, '0');
+            const day = document.getElementById('day-dropdown').value.padStart(2, '0');
+            const date = `${year}-${month}-${day}`;
             localStorage.setItem(date, JSON.stringify(attendanceData));
             alert('데이터가 저장되었습니다.');
         });
@@ -256,6 +238,16 @@
                 data.push({ name: studentName, status: attendanceStatus });
             });
             return data;
+        }
+
+        function saveCurrentAttendanceData() {
+            const year = document.getElementById('year-dropdown').value;
+            const month = document.getElementById('month-dropdown').value.padStart(2, '0');
+            const day = document.getElementById('day-dropdown').value.padStart(2, '0');
+            const date = `${year}-${month}-${day}`;
+
+            const attendanceData = collectAttendanceData();
+            localStorage.setItem(date, JSON.stringify(attendanceData));
         }
 
         window.onload = function() {
