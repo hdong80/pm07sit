@@ -97,7 +97,7 @@
             dropdown.value = '출석'; // 드랍다운을 '출석'으로 설정
             updateBoxColor(studentBox, '출석'); // 상자의 색상을 출석 상태로 업데이트
         } else {
-            dropdown.selectedIndex = -1; // 이름이 없는 경우 드랍다운을 선택하지 않음으로 설정
+            dropdown.value = ''; // 이름이 없는 경우 드랍다운을 선택하지 않음으로 설정
         }
     });
     calculateStatistics(); // 통계 재계산
@@ -144,7 +144,6 @@ function populateStudents(studentData) {
                 const dropdown = document.createElement('select');
                 dropdown.className = 'attendance-dropdown';
                 dropdown.innerHTML = `
-                    <option value="">선택</option> <!-- 이름이 없는 경우 "선택" 옵션 추가 -->
                     <option value="출석">출석</option>
                     <option value="지각8">지각8</option>
                     <option value="지각질병">지각병</option>
